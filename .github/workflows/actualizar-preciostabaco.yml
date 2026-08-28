@@ -1,0 +1,36 @@
+name: Actualizar PRECIOSTABACO
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 6 * * *"
+    - cron: "15 7 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Descargar y normalizar catálogo
+        env:
+          LOGISTA_URL: "https://www.logista.com/content/logista-corporate/logista/es/home/solutions/tobacco-products/tarifario-estancos/jcr:content/root/leftBarArea/right-content/catalogue_form_copy.full.csv"
+        run: python scripts/normalizar_catalogo.py "$LOGISTA_URL"
+      - name: Publicar si ha cambiado
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "Sin cambios. No se publica una nueva versión."
+            exit 0
+          fi
+          git add PRECIOSTABACO*.csv ultimo.txt fecha_actualizacion.txt
+          git commit -m "Actualizar PRECIOSTABACO"
+          git push
