@@ -42,28 +42,31 @@ code=col(headers,["codigo","código","codigo sap","referencia"])
 desc=col(headers,["descripcion","descripción","nombre"])
 pcol=col(headers,["precio (eur)","precio eur","precio","pvp"])
 ucol=col(headers,["lote min","lote minimo","lote mínimo"])
+mcol=col(headers,["um"])
 if not code or not pcol: raise SystemExit(f"Columnas no reconocidas: {headers}")
 if not ucol: print(f"[AVISO] No se encontró columna de unidades. Cabeceras disponibles: {headers}")
+if not mcol: print(f"[AVISO] No se encontró columna UM. Cabeceras disponibles: {headers}")
 rows=[]
 for r in reader:
     c=str(r.get(code,"") or "").strip()
     p=price(r.get(pcol,""))
     d=str(r.get(desc,"") or "").strip() if desc else ""
     u=str(r.get(ucol,"") or "").strip() if ucol else ""
-    if c and p is not None: rows.append((c,d,p,u))
+    m=str(r.get(mcol,"") or "").strip() if mcol else ""
+    if c and p is not None: rows.append((c,d,p,u,m))
 rows.sort()
 
 # --- Archivo principal (formato actual: codigo;descripcion;precio) ---
 out=io.StringIO(newline="")
 w=csv.writer(out,delimiter=";",lineterminator="\n")
 w.writerow(["codigo","descripcion","precio"])
-w.writerows((c,d,p) for c,d,p,u in rows)
+w.writerows((c,d,p) for c,d,p,u,m in rows)
 content=out.getvalue()
 
-# --- Archivo nuevo con unidades (codigo;descripcion;precio;unidades) ---
+# --- Archivo nuevo con unidades y UM (codigo;descripcion;precio;unidades;um) ---
 out2=io.StringIO(newline="")
 w2=csv.writer(out2,delimiter=";",lineterminator="\n")
-w2.writerow(["codigo","descripcion","precio","unidades"])
+w2.writerow(["codigo","descripcion","precio","unidades","um"])
 w2.writerows(rows)
 content2=out2.getvalue()
 
