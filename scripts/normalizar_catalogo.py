@@ -63,11 +63,11 @@ w.writerow(["codigo","descripcion","precio"])
 w.writerows((c,d,p) for c,d,p,u,m in rows)
 content=out.getvalue()
 
-# --- Archivo nuevo con unidades y UM (codigo;descripcion;precio;unidades;um) ---
+# --- Archivo con unidades y UM: CODIGO,DESCRIPCION,UNIDADES,UM,PRECIO (separador ; , precio con coma decimal) ---
 out2=io.StringIO(newline="")
 w2=csv.writer(out2,delimiter=";",lineterminator="\n")
-w2.writerow(["codigo","descripcion","precio","unidades","um"])
-w2.writerows(rows)
+w2.writerow(["codigo","descripcion","unidades","um","precio"])
+w2.writerows((c,d,u,m,p.replace(".",",")) for c,d,p,u,m in rows)
 content2=out2.getvalue()
 
 # Detección de cambios: se basa en el archivo con unidades (es superset de la info)
